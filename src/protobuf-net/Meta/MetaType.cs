@@ -1100,7 +1100,28 @@ namespace ProtoBuf.Meta
                     attrib = GetAttribute(attribs, "ProtoBuf.ProtoEnumAttribute");
 
                     var value = ((FieldInfo)member).GetRawConstantValue();
-                    if (attrib is object) GetFieldName(ref name, attrib, nameof(ProtoEnumAttribute.Name));
+
+                    if (attrib is object)
+                    {
+                        GetFieldName(ref name, attrib, nameof(ProtoEnumAttribute.Name));
+
+                        // Check deprecated enum value map isn't being used with conflicting enum values.
+                        if ((bool)Helpers.GetInstanceMethod(attrib.AttributeType, nameof(ProtoEnumAttribute.HasValue)).Invoke(attrib.Target, null))
+                        {
+                            // ProtoEnumAttribute.Value is an int
+                            if (attrib.TryGet(nameof(ProtoEnumAttribute.Value), out object attrValue) && attrValue is int attrValuei32)
+                            {
+                                int? valuei32 = EnumMember.TryGetInt32(value);
+
+                                // If the raw enum value is not safely convertable to an int32 and we're here (e.g. attribute value has been set to *something*), then we fail the check
+                                var hasConflictingEnumValue = !valuei32.HasValue || attrValuei32 != valuei32.Value;
+                                if (hasConflictingEnumValue)
+                                {
+                                    ThrowHelper.ThrowNotSupportedException($"Enum value maps have been deprecated and are no longer supported; Found conflicting ProtoEnumAttribute.Value set on '{member.DeclaringType.FullName}' (Enum raw value = '{value}', ProtoEnumAttribute.Value = '{attrValue}').");
+                                }
+                            }
+                        }
+                    }
                     if (string.IsNullOrWhiteSpace(name)) name = member.Name;
 
                     enumMember = new EnumMember(value, name);

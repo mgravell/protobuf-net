@@ -212,5 +212,88 @@ namespace ProtoBuf.unittest.Meta
                 readState.Dispose();
             }
         }
+
+#if DEBUG
+#pragma warning disable CS0618 // Type or member is obsolete
+
+        /// <summary>
+        /// Since we mark the ProtoEnumAttribute.Value setter with Obsolete(error: true) we cannot test it (Since it's use is forbidden by the compiler)
+        /// We want to test this scenario since it can occur if a protobuf-net v2 dependant library is used by a project that references protobuf-net v3.
+        /// The assembly redirects will mean v3 is used and therefore we allow it's use but ONLY if the value matches (so we fail fast if people try to use
+        /// it that is not compatible with the v3 way)
+        /// </summary>
+        public enum MatchingBlebI32
+        {
+            [ProtoEnum(Value = 0)]
+            Foo,
+            [ProtoEnum(Value = 2)]
+            Bar = 2
+        }
+        public enum MatchingBlebU8 : byte
+        {
+            [ProtoEnum(Value = 4)]
+            Foo = 4,
+            [ProtoEnum(Value = 8)]
+            Bar = 8
+        }
+
+        [Fact]
+        public void ObsoleteRemapValuesWorkIfMatchingI32()
+        {
+            var model = RuntimeTypeModel.Create();
+            model.Add(typeof(MatchingBlebI32), true);
+        }
+        [Fact]
+        public void ObsoleteRemapValuesWorkIfMatchingU8()
+        {
+            var model = RuntimeTypeModel.Create();
+            model.Add(typeof(MatchingBlebU8), true);
+        }
+
+        enum ConflictingBlebI32
+        {
+            [ProtoEnum(Value = 0)] // Matching
+            Foo,
+            [ProtoEnum(Value = 99)] // Conflicting
+            Bar = 4,
+            [ProtoEnum(Value = 8)] // Matching
+            FooBar = 8
+        }
+        enum ConflictingBlebU8 : byte
+        {
+            [ProtoEnum(Value = 0)] // Matching
+            Foo,
+            [ProtoEnum(Value = 99)] // Conflicting
+            Bar = 4,
+            [ProtoEnum(Value = 8)] // Matching
+            FooBar = 8
+        }
+        enum ConflictingBlebU64 : ulong
+        {
+            [ProtoEnum(Value = 1234)] // Conflicting
+            Foo = long.MaxValue,
+        }
+
+        [Fact]
+        public void ObsoleteRemapValuesCannotConflictU64()
+        {
+            var model = RuntimeTypeModel.Create();
+            Assert.Throws<NotSupportedException>(() => model.Add(typeof(ConflictingBlebU64), true));
+        }
+
+        [Fact]
+        public void ObsoleteRemapValuesCannotConflictI32()
+        {
+            var model = RuntimeTypeModel.Create();
+            Assert.Throws<NotSupportedException>(() => model.Add(typeof(ConflictingBlebI32), true));
+        }
+        [Fact]
+        public void ObsoleteRemapValuesCannotConflictU8()
+        {
+            var model = RuntimeTypeModel.Create();
+            Assert.Throws<NotSupportedException>(() => model.Add(typeof(ConflictingBlebU8), true));
+        }
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
     }
 }

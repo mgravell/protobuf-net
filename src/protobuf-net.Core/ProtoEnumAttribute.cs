@@ -12,15 +12,20 @@ namespace ProtoBuf
     {
         internal const string EnumValueDeprecated = "Enum value maps have been deprecated and are no longer supported; all enums are now effectively pass-thru; custom maps should be applied via shadow properties; in C#, lambda-based 'switch expressions' make for very convenient shadow properties";
 
+
         /// <summary>
         /// Gets or sets the specific value to use for this enum during serialization.
         /// </summary>
         public int Value
         {
             [Obsolete(EnumValueDeprecated, false)]
-            get { return default; }
+            get { return enumValue; }
+#if DEBUG
+            [Obsolete(EnumValueDeprecated, false)]
+#else
             [Obsolete(EnumValueDeprecated, true)]
-            set { ThrowHelper.ThrowNotSupportedException(); }
+#endif
+            set { this.enumValue = value; hasValue = true; }
         }
 
         /// <summary>
@@ -28,7 +33,10 @@ namespace ProtoBuf
         /// </summary>
         /// <returns>true if a specific value is set</returns>
         [Obsolete(EnumValueDeprecated, false)]
-        public bool HasValue() => false;
+        public bool HasValue() => hasValue;
+
+        private bool hasValue;
+        private int enumValue;
 
         /// <summary>
         /// Gets or sets the defined name of the enum, as used in .proto
