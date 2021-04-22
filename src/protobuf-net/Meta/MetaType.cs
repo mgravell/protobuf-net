@@ -952,8 +952,9 @@ namespace ProtoBuf.Meta
                         break;
                 }
             }
-            if (family == AttributeFamily.None)
-            { // check for obvious tuples
+            if (family == AttributeFamily.None && model.AllowImplicitTuples)
+            { 
+                // check for obvious tuples
                 if (ResolveTupleConstructor(type, out _) is object)
                 {
                     family |= AttributeFamily.AutoTuple;

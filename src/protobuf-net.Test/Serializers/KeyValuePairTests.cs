@@ -4,7 +4,6 @@ using ProtoBuf.Meta;
 
 namespace ProtoBuf.unittest.Serializers
 {
-    
     public class KeyValuePairTests
     {
         [Fact]

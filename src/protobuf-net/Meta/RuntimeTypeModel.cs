@@ -51,6 +51,7 @@ namespace ProtoBuf.Meta
             UseImplicitZeroDefaults = 1 << 15,
             AllowParseableTypes = 1 << 16,
             AutoAddProtoContractTypesOnly = 1 << 17,
+            AllowImplicitTuples = 1 << 18,
         }
 
         /// <summary>
@@ -161,6 +162,19 @@ namespace ProtoBuf.Meta
         {
             get { return GetOption(RuntimeTypeModelOptions.InternStrings); }
             set { SetOption(RuntimeTypeModelOptions.InternStrings, value); }
+        }
+
+        /// <summary>
+        /// Global switch that enables or disables the implicit handling of tuple-like types.
+        /// With this enabled, types that
+        ///     - have a constructor with parameters that are equivalent to all its public members 
+        ///     - has only read-only properties, or whose name includes Tuple
+        /// are serialized even if they are not attributed.
+        /// </summary>
+        public bool AllowImplicitTuples
+        {
+            get { return GetOption(RuntimeTypeModelOptions.AllowImplicitTuples); }
+            set { SetOption(RuntimeTypeModelOptions.AllowImplicitTuples, value); }
         }
 
         /// <summary>
@@ -556,6 +570,7 @@ namespace ProtoBuf.Meta
         {
             AutoAddMissingTypes = true;
             UseImplicitZeroDefaults = true;
+            AllowImplicitTuples = true;
             SetOption(RuntimeTypeModelOptions.IsDefaultModel, isDefault);
 #if !DEBUG
             try
