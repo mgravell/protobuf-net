@@ -68,7 +68,10 @@ namespace ProtoBuf.Meta
         /// Record the sub-type relationship formally in schemas
         /// </summary>
         PreserveSubType = 1 << 1,
+
+        /// <summary>
+        /// Include source type full name into generated schema
+        /// </summary>
+        WriteSourceType = 1 << 2,
     }
-
-
 }

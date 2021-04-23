@@ -1999,6 +1999,7 @@ namespace ProtoBuf.Meta
                 bool allValid = IsValidEnum(enums);
                 if (!allValid) NewLine(builder, indent).Append("/* for context only");
                 NewLine(builder, indent).Append("enum ").Append(GetSchemaTypeName(callstack)).Append(" {");
+                AddSourceType();
                 AddNamespace(imports);
 
                 if (Type.IsDefined(typeof(FlagsAttribute), true))
@@ -2062,6 +2063,7 @@ namespace ProtoBuf.Meta
             {
                 ValueMember[] fieldsArr = GetFields();
                 NewLine(builder, indent).Append("message ").Append(GetSchemaTypeName(callstack)).Append(" {");
+                AddSourceType();
                 AddNamespace(imports);
                 foreach (ValueMember member in fieldsArr)
                 {
@@ -2194,7 +2196,16 @@ namespace ProtoBuf.Meta
                 if (HasReservations) AppendReservations();
                 NewLine(builder, indent).Append('}');
             }
-
+            void AddSourceType()
+            {
+                bool includeSourceType = (flags & SchemaGenerationFlags.WriteSourceType) != 0;
+                if (includeSourceType)
+                {
+                    NewLine(builder, indent + 1)
+                        .Append("// source type: ")
+                        .Append(Type.FullName); 
+                }
+            }
             void AddNamespace(HashSet<string> imports)
             {
                 if (!multipleNamespaceSupport || IsAutoTuple || string.IsNullOrWhiteSpace(Type.Namespace) || Type.Namespace == package)
