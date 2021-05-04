@@ -270,30 +270,7 @@ namespace ProtoBuf
         [MethodImpl(ProtoReader.HotPath)]
         private static void WriteDateTimeImpl(ref ProtoWriter.State state, DateTime value, bool includeKind)
         {
-            TimeSpan delta;
-            switch (state.WireType)
-            {
-                case WireType.StartGroup:
-                case WireType.String:
-                    if (value == DateTime.MaxValue)
-                    {
-                        delta = TimeSpan.MaxValue;
-                        includeKind = false;
-                    }
-                    else if (value == DateTime.MinValue)
-                    {
-                        delta = TimeSpan.MinValue;
-                        includeKind = false;
-                    }
-                    else
-                    {
-                        delta = value - EpochOrigin[0];
-                    }
-                    break;
-                default:
-                    delta = value - EpochOrigin[0];
-                    break;
-            }
+            TimeSpan delta = value - EpochOrigin[0];
             WriteTimeSpanImpl(ref state, delta, includeKind ? value.Kind : DateTimeKind.Unspecified);
         }
 
