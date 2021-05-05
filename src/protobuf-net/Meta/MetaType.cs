@@ -1570,9 +1570,8 @@ namespace ProtoBuf.Meta
 
         private ValueMember AddField(int fieldNumber, string memberName, Type itemType, Type defaultType, object defaultValue)
         {
-            MemberInfo mi = null;
             MemberInfo[] members = Type.GetMember(memberName, Type.IsEnum ? BindingFlags.Static | BindingFlags.Public : BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            if (members is object && members.Length == 1) mi = members[0];
+            MemberInfo mi = GetSingleMember(members);
             if (mi is null) throw new ArgumentException("Unable to determine member: " + memberName, nameof(memberName));
 
             Type miType;
@@ -1594,7 +1593,7 @@ namespace ProtoBuf.Meta
             MemberInfo backingField = null;
             if (pi?.CanWrite == false)
             {
-                var backingMembers = Type.GetMember($"<{((PropertyInfo)mi).Name}>k__BackingField", Type.IsEnum ? BindingFlags.Static | BindingFlags.Public : BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                var backingMembers = Type.GetMember($"<{pi.Name}>k__BackingField", Type.IsEnum ? BindingFlags.Static | BindingFlags.Public : BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                 if (backingMembers is object && backingMembers.Length == 1 && backingMembers[0] is FieldInfo)
                     backingField = backingMembers[0];
             }
@@ -1613,6 +1612,35 @@ namespace ProtoBuf.Meta
                 newField.SetName(mi.Name);
             Add(newField);
             return newField;
+        }
+
+        private MemberInfo GetSingleMember(MemberInfo[] members)
+        {
+            if (members is null) return null;
+            if (members.Length == 1) return members[0];
+
+            MemberInfo memberFromThisType = null;
+            foreach (var member in members)
+            {
+                if (member.DeclaringType == Type)
+                {
+                    memberFromThisType = member;
+                    break;
+                }
+            }
+            // Ensure no collisions in backing fields
+            if (memberFromThisType != null && memberFromThisType.MemberType == MemberTypes.Property)
+            {
+                var prop = (PropertyInfo)memberFromThisType;
+                if (!prop.CanWrite) // otherwise we don't try to find backing field in AddField
+                {
+                    foreach (var member in members)
+                    {
+                        if (member.MemberType == memberFromThisType.MemberType) return null;
+                    } 
+                }
+            }
+            return memberFromThisType;
         }
 
         private void Add(ValueMember member)

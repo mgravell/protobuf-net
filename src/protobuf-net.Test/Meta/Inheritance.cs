@@ -17,6 +17,7 @@ namespace ProtoBuf.unittest.Meta
         public class AnotherDerived : SomeBase { public int C { get; set; } }
         public class NotInvolved { public int D { get; set; } }
         public class AlsoNotInvolved { public int E { get; set; } }
+        public class OverridingDerived : AnotherBase { public string Prop { get; set; } }
 
         static RuntimeTypeModel CreateModel() {
             var model = RuntimeTypeModel.Create();
@@ -27,6 +28,7 @@ namespace ProtoBuf.unittest.Meta
                 .AddSubType(3, typeof(AnotherDerived));
             model[typeof(SomeDerived)].Add(1, "B");
             model[typeof(AnotherDerived)].Add(1, "C");
+            model[typeof(OverridingDerived)].Add(1, "Prop");
             model[typeof(AlsoNotInvolved)].Add(1, "E");
             return model;
         }

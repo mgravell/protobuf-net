@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\protobuf-net.NodaTime\protobuf-net.NodaTime.csproj" />
+    <ProjectReference Include="..\protobuf-net.Test.Entities\protobuf-net.Test.Entities.csproj" />
     <ProjectReference Include="..\protobuf-net.TestCompatibilityLevel\protobuf-net.TestCompatibilityLevel.csproj" />
     <ProjectReference Include="..\protobuf-net\protobuf-net.csproj" />
     <ProjectReference Include="..\protobuf-net.Reflection\protobuf-net.Reflection.csproj" />
