@@ -809,19 +809,34 @@ namespace ProtoBuf.Reflection
                     return name;
                 }
             }
-
             return Escape(typeName);
         }
 
         private string GetTypeName(GeneratorContext ctx, string typeName)
         {
-            string dataFormat = "";
-            bool isMap = false;
-            return GetTypeName(ctx, null, typeName, ref dataFormat, ref isMap, false);
+            var dataFormat = "";
+            var commonName = GetCommonTypeName(typeName, ref dataFormat);
+            if (commonName != default) return commonName;
+            var target = ctx.TryFind<DescriptorProto>(typeName);
+            var name = FindNameFromCommonAncestor(ctx.File, target, ctx.NameNormalizer);
+            return !string.IsNullOrWhiteSpace(name) ? name : Escape(typeName);
         }
 
         private string GetTypeName(GeneratorContext ctx, FieldDescriptorProto field, string typeName, ref string dataFormat, ref bool isMap,
             bool nonNullable = false)
+        {
+            var commonName = GetCommonTypeName(typeName, ref dataFormat, nonNullable);
+            if (commonName != default) return commonName;
+            var msgType = ctx.TryFind<DescriptorProto>(typeName);
+            if (field != null && field.type == FieldDescriptorProto.Type.TypeGroup)
+            {
+                dataFormat = nameof(DataFormat.Group);
+            }
+            isMap = msgType?.Options?.MapEntry ?? false;
+            return field == null ? MakeRelativeName(ctx, typeName) : MakeRelativeName(field, msgType, ctx.NameNormalizer);
+        }
+
+        private static string GetCommonTypeName(string typeName, ref string dataFormat, bool nonNullable = false)
         {
             switch (typeName)
             {
@@ -843,15 +858,11 @@ namespace ProtoBuf.Reflection
                     return nonNullable ? "decimal" : "decimal?";
                 case ".bcl.Guid":
                     return nonNullable ? "global::System.Guid" : "global::System.Guid?";
+                default:
+                    return default;
             }
-            var msgType = ctx.TryFind<DescriptorProto>(typeName);
-            if ( field!= null && field.type == FieldDescriptorProto.Type.TypeGroup)
-            {
-                dataFormat = nameof(DataFormat.Group);
-            }
-            isMap = msgType?.Options?.MapEntry ?? false;
-            return field == null ? MakeRelativeName(ctx, typeName) : MakeRelativeName(field, msgType, ctx.NameNormalizer);
         }
+
         private string GetTypeName(GeneratorContext ctx, FieldDescriptorProto field, out string dataFormat, out bool isMap,
             bool nonNullable = false)
         {
