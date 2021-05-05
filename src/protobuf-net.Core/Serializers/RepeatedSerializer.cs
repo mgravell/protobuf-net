@@ -46,13 +46,13 @@ namespace ProtoBuf.Serializers
         /// <summary>Create a serializer that operates on most common collections</summary>
         [MethodImpl(ProtoReader.HotPath)]
         public static RepeatedSerializer<TCollection, T> CreateEnumerable<TCollection, [DynamicallyAccessedMembers(DynamicAccess.ContractType)] T>()
-            where TCollection : class, IEnumerable<T>
+            where TCollection : IEnumerable<T>
             => SerializerCache<EnumerableSerializer<TCollection, TCollection, T>>.InstanceField;
 
         /// <summary>Create a serializer that operates on most common collections</summary>
         [MethodImpl(ProtoReader.HotPath)]
         public static RepeatedSerializer<TCollection, T> CreateEnumerable<TCollection, TCreate, [DynamicallyAccessedMembers(DynamicAccess.ContractType)] T>()
-            where TCollection : class, IEnumerable<T>
+            where TCollection : IEnumerable<T>
             where TCreate : TCollection
             => SerializerCache<EnumerableSerializer<TCollection, TCreate, T>>.InstanceField;
 
@@ -380,7 +380,7 @@ namespace ProtoBuf.Serializers
     }
 
     class EnumerableSerializer<TCollection, TCreate, T> : RepeatedSerializer<TCollection, T>
-        where TCollection : class, IEnumerable<T>
+        where TCollection : IEnumerable<T>
         where TCreate : TCollection
     {
         protected override TCollection Initialize(TCollection values, ISerializationContext context)

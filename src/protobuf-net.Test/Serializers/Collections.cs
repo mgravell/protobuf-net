@@ -14,6 +14,7 @@ namespace ProtoBuf.Serializers
         [Theory]
         [InlineData(typeof(string), null)]
         [InlineData(typeof(DoubleEnumerable), null)] // ambiguous? you can go without, then!
+        [InlineData(typeof(StructEnumerable), typeof(EnumerableSerializer<StructEnumerable, StructEnumerable, int>))]
 
         [InlineData(typeof(int[]), typeof(VectorSerializer<int>))]
         [InlineData(typeof(List<int>), typeof(ListSerializer<int>))]
@@ -193,6 +194,12 @@ namespace ProtoBuf.Serializers
         public class DoubleEnumerable : IEnumerable<string>, IEnumerable<int>
         {
             IEnumerator<string> IEnumerable<string>.GetEnumerator() => throw new NotImplementedException();
+            IEnumerator<int> IEnumerable<int>.GetEnumerator() => throw new NotImplementedException();
+            IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
+        }
+
+        public struct StructEnumerable : IEnumerable<int>
+        {
             IEnumerator<int> IEnumerable<int>.GetEnumerator() => throw new NotImplementedException();
             IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
         }
