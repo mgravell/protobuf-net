@@ -2162,6 +2162,10 @@ namespace ProtoBuf.Meta
                     {
                         builder.Append(" // reference-tracked ").Append(member.GetSchemaTypeName(callstack, false, imports, out _));
                     }
+                    else if ( schemaTypeName == member.MemberType.BaseType.Name)
+                    {
+                        builder.Append(" //which will always have a ").Append(member.MemberType.Name).Append(" sub-type");
+                    }
                 }
                 if (_subTypes is object && _subTypes.Count != 0)
                 {

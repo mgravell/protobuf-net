@@ -134,5 +134,134 @@ service ConferencesService {
             [DataMember(Order = 2)]
             public string Title { get; set; }
         }
+
+        [ProtoContract]
+        [ProtoInclude(3, typeof(AdditionRequest))]
+        public class MultiplyRequest
+        {
+            [ProtoMember(1)]
+            public int First { get; set; }
+
+            [ProtoMember(2)]
+            public int Second { get; set; }
+        }
+
+        [ProtoContract]
+        [ProtoInclude(2, typeof(AdditionResult))]
+        public class MultiplyResult
+        {
+            [ProtoMember(1)]
+            public int Result { get; set; }
+        }
+
+        [ProtoContract]
+        public class AdditionRequest : MultiplyRequest
+        {
+            [ProtoMember(1)]
+            public int Third { get; set; }
+        }
+
+        [ProtoContract]
+        public class AdditionResult : MultiplyResult
+        {
+        }
+
+        [ProtoContract]
+        public class AddServiceInputs
+        {
+            [ProtoMember(1)]
+            bool IsEvent { get; set; }
+
+            [ProtoMember(2)]
+            public AdditionRequest AdditionRequest { get; set; }
+        }
+
+        [ProtoContract]
+        public class AddServiceOutputs
+        {
+            [ProtoMember(1)]
+            public AdditionResult AdditionResult { get; set; }
+        }
+
+        [ProtoContract]
+        public class MultiplyServiceInputs
+        {
+            [ProtoMember(1)]
+            bool IsEvent { get; set; }
+
+            [ProtoMember(2)]
+            public MultiplyRequest MultiplyRequest { get; set; }
+        }
+
+        [ProtoContract]
+        public class MultiplyServiceOutputs
+        {
+            [ProtoMember(1)]
+            public MultiplyResult MultiplyResult { get; set; }
+        }
+
+        [Fact]
+        void InheritanceServiceSchema()
+        {
+            var service = new Service
+            {
+                Name = "CalculatorService",
+                Methods =
+                {
+                    new ServiceMethod { Name = "Multiply", InputType = typeof(MultiplyServiceInputs), OutputType = typeof(MultiplyServiceOutputs) },
+                    new ServiceMethod { Name = "Add", InputType = typeof(AddServiceInputs), OutputType = typeof(AddServiceOutputs) },
+                }
+            };
+
+            var schema = RuntimeTypeModel.Default.GetSchema(
+                new SchemaGenerationOptions
+                {
+                    Syntax = ProtoSyntax.Proto3,
+                    Package = "protobuf_net.Grpc.Reflection.Test",
+                    Services = { service }
+                }
+            );
+            Log(schema);
+            Assert.Equal(@"syntax = ""proto3"";
+package protobuf_net.Grpc.Reflection.Test;
+
+message AddServiceInputs {
+   bool IsEvent = 1;
+   MultiplyRequest AdditionRequest = 2; //which will always have a AdditionRequest sub-type
+}
+message AddServiceOutputs {
+   MultiplyResult AdditionResult = 1; //which will always have a AdditionResult sub-type
+}
+message AdditionRequest {
+   int32 Third = 1;
+}
+message AdditionResult {
+}
+message MultiplyRequest {
+   int32 First = 1;
+   int32 Second = 2;
+   oneof subtype {
+      AdditionRequest AdditionRequest = 3;
+   }
+}
+message MultiplyResult {
+   int32 Result = 1;
+   oneof subtype {
+      AdditionResult AdditionResult = 2;
+   }
+}
+message MultiplyServiceInputs {
+   bool IsEvent = 1;
+   MultiplyRequest MultiplyRequest = 2;
+}
+message MultiplyServiceOutputs {
+   MultiplyResult MultiplyResult = 1;
+}
+service CalculatorService {
+   rpc Multiply (MultiplyServiceInputs) returns (MultiplyServiceOutputs);
+   rpc Add (AddServiceInputs) returns (AddServiceOutputs);
+}
+", schema, ignoreLineEndingDifferences: true);
+        }
     }
 }
