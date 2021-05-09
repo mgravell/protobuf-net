@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+option java_package = "com.xxx.protocol.proto";
+
+option java_outer_classname = "yyyMessages";
+
+message Presented1 {
+  optional bool obfuscatedField = 1;
+}
+
+message Missed1 {
+  optional bool obfuscatedField = 1;
+}
+
+message Missed2 {
+  optional bool obfuscatedField = 1;
+}

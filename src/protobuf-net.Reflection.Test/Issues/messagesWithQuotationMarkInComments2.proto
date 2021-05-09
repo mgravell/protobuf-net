@@ -1,0 +1,8 @@
+syntax = "proto2";
+option java_package = "com.xxx.protocol.proto";
+option java_outer_classname = "yyyMessages";
+
+/*'s*/
+message Message1 {
+  optional bool Field1 = 1;
+}
