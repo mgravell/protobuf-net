@@ -741,7 +741,7 @@ namespace ProtoBuf
             [MethodImpl(HotPath)]
             internal void CheckFullyConsumed()
             {
-                if (!_reader.IsFullyConsumed(ref this)) ThrowProtoException("Incorrect number of bytes consumed");
+                if (!_reader.IsFullyConsumed(ref this) && !_reader.AllowZeroPadding) ThrowProtoException("Incorrect number of bytes consumed");
             }
 
             /// <summary>

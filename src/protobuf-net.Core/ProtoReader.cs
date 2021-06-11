@@ -305,7 +305,7 @@ namespace ProtoBuf
         [MethodImpl(HotPath)]
         private int SetTag(uint tag)
         {
-            if ((_fieldNumber = (int)(tag >> 3)) < 1) ThrowInvalidField(_fieldNumber);
+            if ((_fieldNumber = (int)(tag >> 3)) < 1) ThrowInvalidField();
             if ((WireType = (WireType)(tag & 7)) == WireType.EndGroup)
             {
                 if (_depth > 0) return 0; // spoof an end, but note we still set the field-number
@@ -313,8 +313,16 @@ namespace ProtoBuf
             }
             return _fieldNumber;
         }
-        private static void ThrowInvalidField(int fieldNumber)
-            => ThrowHelper.ThrowProtoException("Invalid field in source data: " + fieldNumber.ToString());
+
+        private bool AllowZeroPadding => UserState is ISerializationOptions options && (options.Options & SerializationOptions.AllowZeroPadding) != 0;
+
+        private void ThrowInvalidField()
+        {
+            if (!(_fieldNumber == 0 && AllowZeroPadding))
+            {
+                ThrowHelper.ThrowProtoException("Invalid field in source data: " + _fieldNumber.ToString());
+            }
+        }
         private static void ThrowUnexpectedEndGroup()
             => ThrowHelper.ThrowProtoException("Unexpected end-group in source data; this usually means the source data is corrupt");
 
